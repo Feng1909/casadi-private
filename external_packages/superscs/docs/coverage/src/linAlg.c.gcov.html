@@ -1,0 +1,1126 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - SuperSCS Unit Tests - src/linAlg.c</title>
+  <link rel="stylesheet" type="text/css" href="../gcov.css">
+</head>
+
+<body>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="title">LCOV - code coverage report</td></tr>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+
+    <tr>
+      <td width="100%">
+        <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="35%" class="headerValue"><a href="../index.html">top level</a> - <a href="index.html">src</a> - linAlg.c<span style="font-size: 80%;"> (source / <a href="linAlg.c.func.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="15%"></td>
+            <td width="10%" class="headerCovTableHead">Hit</td>
+            <td width="10%" class="headerCovTableHead">Total</td>
+            <td width="15%" class="headerCovTableHead">Coverage</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">SuperSCS Unit Tests</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntry">139</td>
+            <td class="headerCovTableEntry">139</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Date:</td>
+            <td class="headerValue">2018-05-30</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntry">20</td>
+            <td class="headerCovTableEntry">20</td>
+            <td class="headerCovTableEntryHi">100.0 %</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Legend:</td>
+            <td class="headerValueLeg">            Lines:
+            <span class="coverLegendCov">hit</span>
+            <span class="coverLegendNoCov">not hit</span>
+</td>
+            <td></td>
+          </tr>
+          <tr><td><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+  </table>
+
+  <table cellpadding=0 cellspacing=0 border=0>
+    <tr>
+      <td><br></td>
+    </tr>
+    <tr>
+      <td>
+<pre class="sourceHeading">          Line data    Source code</pre>
+<pre class="source">
+<a name="1"><span class="lineNum">       1 </span>            : /*</a>
+<span class="lineNum">       2 </span>            :  * The MIT License (MIT)
+<span class="lineNum">       3 </span>            :  *
+<span class="lineNum">       4 </span>            :  * Copyright (c) 2017 Pantelis Sopasakis (https://alphaville.github.io),
+<span class="lineNum">       5 </span>            :  *                    Krina Menounou (https://www.linkedin.com/in/krinamenounou), 
+<span class="lineNum">       6 </span>            :  *                    Panagiotis Patrinos (http://homes.esat.kuleuven.be/~ppatrino)
+<span class="lineNum">       7 </span>            :  * Copyright (c) 2012 Brendan O'Donoghue (bodonoghue85@gmail.com)
+<span class="lineNum">       8 </span>            :  *
+<span class="lineNum">       9 </span>            :  * Permission is hereby granted, free of charge, to any person obtaining a copy
+<span class="lineNum">      10 </span>            :  * of this software and associated documentation files (the &quot;Software&quot;), to deal
+<span class="lineNum">      11 </span>            :  * in the Software without restriction, including without limitation the rights
+<span class="lineNum">      12 </span>            :  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+<span class="lineNum">      13 </span>            :  * copies of the Software, and to permit persons to whom the Software is
+<span class="lineNum">      14 </span>            :  * furnished to do so, subject to the following conditions:
+<span class="lineNum">      15 </span>            :  *
+<span class="lineNum">      16 </span>            :  * The above copyright notice and this permission notice shall be included in all
+<span class="lineNum">      17 </span>            :  * copies or substantial portions of the Software.
+<span class="lineNum">      18 </span>            :  *
+<span class="lineNum">      19 </span>            :  * THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+<span class="lineNum">      20 </span>            :  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+<span class="lineNum">      21 </span>            :  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+<span class="lineNum">      22 </span>            :  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+<span class="lineNum">      23 </span>            :  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+<span class="lineNum">      24 </span>            :  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+<span class="lineNum">      25 </span>            :  * SOFTWARE.
+<span class="lineNum">      26 </span>            :  * 
+<span class="lineNum">      27 </span>            :  */
+<span class="lineNum">      28 </span>            : #include &quot;linAlg.h&quot;
+<span class="lineNum">      29 </span>            : #include &lt;math.h&gt;
+<span class="lineNum">      30 </span>            : #include &lt;stdio.h&gt;
+<span class="lineNum">      31 </span>            : 
+<span class="lineNum">      32 </span>            : 
+<span class="lineNum">      33 </span>            : #ifdef LAPACK_LIB_FOUND
+<span class="lineNum">      34 </span>            : 
+<span class="lineNum">      35 </span>            : #define SCS_NO_SUFFIX 
+<span class="lineNum">      36 </span>            : #define SCS_IAMAX stitch__(i, BLAS(amax), SCS_NO_SUFFIX)
+<span class="lineNum">      37 </span>            : 
+<span class="lineNum">      38 </span>            : extern blasint SCS_IAMAX(
+<span class="lineNum">      39 </span>            :         const blasint *n,
+<span class="lineNum">      40 </span>            :         const scs_float *x,
+<span class="lineNum">      41 </span>            :         const blasint *inc_x);
+<span class="lineNum">      42 </span>            : 
+<span class="lineNum">      43 </span>            : extern scs_float BLAS(nrm2)(
+<span class="lineNum">      44 </span>            :         const blasint *n,
+<span class="lineNum">      45 </span>            :         const scs_float *x,
+<span class="lineNum">      46 </span>            :         const blasint *incx);
+<span class="lineNum">      47 </span>            : 
+<span class="lineNum">      48 </span>            : /* y += ax */
+<span class="lineNum">      49 </span>            : extern void BLAS(axpy)(
+<span class="lineNum">      50 </span>            :         const blasint* n,
+<span class="lineNum">      51 </span>            :         const scs_float* alpha,
+<span class="lineNum">      52 </span>            :         const scs_float* x,
+<span class="lineNum">      53 </span>            :         const blasint* inc_x,
+<span class="lineNum">      54 </span>            :         scs_float* y,
+<span class="lineNum">      55 </span>            :         const blasint* inc_y);
+<span class="lineNum">      56 </span>            : 
+<span class="lineNum">      57 </span>            : extern void BLAS(scal)(
+<span class="lineNum">      58 </span>            :         const blasint* n,
+<span class="lineNum">      59 </span>            :         const scs_float* alpha,
+<span class="lineNum">      60 </span>            :         scs_float* x,
+<span class="lineNum">      61 </span>            :         const blasint* inc_x);
+<span class="lineNum">      62 </span>            : 
+<span class="lineNum">      63 </span>            : extern scs_float BLAS(dot)(
+<span class="lineNum">      64 </span>            :         const blasint* n,
+<span class="lineNum">      65 </span>            :         const scs_float* x,
+<span class="lineNum">      66 </span>            :         const blasint* inc_x,
+<span class="lineNum">      67 </span>            :         const scs_float* y,
+<span class="lineNum">      68 </span>            :         const blasint* inc_y);
+<span class="lineNum">      69 </span>            : 
+<span class="lineNum">      70 </span>            : extern void BLAS(gemm)(
+<span class="lineNum">      71 </span>            :         const char* trans_a,
+<span class="lineNum">      72 </span>            :         const char* trans_b,
+<span class="lineNum">      73 </span>            :         const blasint* m,
+<span class="lineNum">      74 </span>            :         const blasint* n,
+<span class="lineNum">      75 </span>            :         const blasint* k,
+<span class="lineNum">      76 </span>            :         const scs_float* alpha,
+<span class="lineNum">      77 </span>            :         const scs_float* A,
+<span class="lineNum">      78 </span>            :         const blasint* lda,
+<span class="lineNum">      79 </span>            :         const scs_float* B,
+<span class="lineNum">      80 </span>            :         const blasint* ldb,
+<span class="lineNum">      81 </span>            :         const scs_float* beta,
+<span class="lineNum">      82 </span>            :         scs_float* C,
+<span class="lineNum">      83 </span>            :         const blasint* ldc);
+<span class="lineNum">      84 </span>            : 
+<span class="lineNum">      85 </span>            : extern void LPCK(gels)(
+<span class="lineNum">      86 </span>            :         const char* trans,
+<span class="lineNum">      87 </span>            :         const blasint* m,
+<span class="lineNum">      88 </span>            :         const blasint* n,
+<span class="lineNum">      89 </span>            :         const blasint* nrhs,
+<span class="lineNum">      90 </span>            :         const scs_float* a,
+<span class="lineNum">      91 </span>            :         const blasint* lda,
+<span class="lineNum">      92 </span>            :         scs_float* b,
+<span class="lineNum">      93 </span>            :         const blasint* ldb,
+<span class="lineNum">      94 </span>            :         scs_float* work,
+<span class="lineNum">      95 </span>            :         blasint* lwork,
+<span class="lineNum">      96 </span>            :         blasint* info);
+<span class="lineNum">      97 </span>            : 
+<span class="lineNum">      98 </span>            : extern void LPCK(gelss)(
+<span class="lineNum">      99 </span>            :         const blasint* m,
+<span class="lineNum">     100 </span>            :         const blasint* n,
+<span class="lineNum">     101 </span>            :         const blasint* nrhs,
+<span class="lineNum">     102 </span>            :         const scs_float* A,
+<span class="lineNum">     103 </span>            :         const blasint* lda,
+<span class="lineNum">     104 </span>            :         scs_float* b,
+<span class="lineNum">     105 </span>            :         const blasint* ldb,
+<span class="lineNum">     106 </span>            :         scs_float* S,
+<span class="lineNum">     107 </span>            :         const scs_float* rcond,
+<span class="lineNum">     108 </span>            :         blasint* rank,
+<span class="lineNum">     109 </span>            :         scs_float* work,
+<span class="lineNum">     110 </span>            :         blasint* lwork,
+<span class="lineNum">     111 </span>            :         blasint* info);
+<span class="lineNum">     112 </span>            : 
+<span class="lineNum">     113 </span>            : #define scs_iamax_ SCS_IAMAX
+<span class="lineNum">     114 </span>            : #define scs_nrm2_  BLAS(nrm2)
+<span class="lineNum">     115 </span>            : #define scs_axpy_  BLAS(axpy)
+<span class="lineNum">     116 </span>            : #define scs_scal_  BLAS(scal)
+<span class="lineNum">     117 </span>            : #define scs_dot_  BLAS(dot)
+<span class="lineNum">     118 </span>            : #define scs_gemm_ BLAS(gemm)
+<span class="lineNum">     119 </span>            : #define scs_gels_ LPCK(gels)
+<span class="lineNum">     120 </span>            : #define scs_dgelss_ LPCK(gelss)
+<span class="lineNum">     121 </span>            : #endif
+<span class="lineNum">     122 </span>            : 
+<span class="lineNum">     123 </span>            : /* static void printVec(char** name, int len, scs_float* x) {
+<span class="lineNum">     124 </span>            :     int i;
+<span class="lineNum">     125 </span>            :     for (i = 0; i &lt; len; ++i) {
+<span class="lineNum">     126 </span>            :          printf(&quot;%s[%d]=%g\n&quot;, name, i, x[i]);
+<span class="lineNum">     127 </span>            :     }
+<span class="lineNum">     128 </span>            :     printf(&quot;\n&quot;);
+<span class="lineNum">     129 </span>            : }*/
+<span class="lineNum">     130 </span>            : 
+<span class="lineNum">     131 </span>            : 
+<span class="lineNum">     132 </span>            : /* LCOV_EXCL_START */
+<span class="lineNum">     133 </span>            : #define SCS_DGEMM_NN_MC  384
+<span class="lineNum">     134 </span>            : #define SCS_DGEMM_NN_KC  384
+<span class="lineNum">     135 </span>            : #define SCS_DGEMM_NN_NC  4096
+<span class="lineNum">     136 </span>            : 
+<span class="lineNum">     137 </span>            : #define SCS_DGEMM_NN_MR  4
+<span class="lineNum">     138 </span>            : #define SCS_DGEMM_NN_NR  4
+<span class="lineNum">     139 </span>            : 
+<span class="lineNum">     140 </span>            : /* 
+<span class="lineNum">     141 </span>            :  *   Local buffers for storing panels from A, B and C
+<span class="lineNum">     142 </span>            :  */
+<span class="lineNum">     143 </span>            : static double SCS_DGEMM_NN__A[SCS_DGEMM_NN_MC*SCS_DGEMM_NN_KC];
+<span class="lineNum">     144 </span>            : static double SCS_DGEMM_NN__B[SCS_DGEMM_NN_KC*SCS_DGEMM_NN_NC];
+<span class="lineNum">     145 </span>            : static double SCS_DGEMM_NN__C[SCS_DGEMM_NN_MR*SCS_DGEMM_NN_NR];
+<span class="lineNum">     146 </span>            : 
+<span class="lineNum">     147 </span>            : /*
+<span class="lineNum">     148 </span>            :  *  Packing complete panels from A (i.e. without padding)
+<span class="lineNum">     149 </span>            :  */
+<span class="lineNum">     150 </span>            : static void
+<span class="lineNum">     151 </span>            : scs_pack_MRxk(int k, const double *A, int incRowA, int incColA,
+<span class="lineNum">     152 </span>            :         double *buffer) {
+<span class="lineNum">     153 </span>            :     int i, j;
+<span class="lineNum">     154 </span>            : 
+<span class="lineNum">     155 </span>            :     for (j = 0; j &lt; k; ++j) {
+<span class="lineNum">     156 </span>            :         for (i = 0; i &lt; SCS_DGEMM_NN_MR; ++i) {
+<span class="lineNum">     157 </span>            :             buffer[i] = A[i * incRowA];
+<span class="lineNum">     158 </span>            :         }
+<span class="lineNum">     159 </span>            :         buffer += SCS_DGEMM_NN_MR;
+<span class="lineNum">     160 </span>            :         A += incColA;
+<span class="lineNum">     161 </span>            :     }
+<span class="lineNum">     162 </span>            : }
+<span class="lineNum">     163 </span>            : 
+<span class="lineNum">     164 </span>            : /*
+<span class="lineNum">     165 </span>            :  *  Packing panels from A with padding if required
+<span class="lineNum">     166 </span>            :  */
+<span class="lineNum">     167 </span>            : static void
+<span class="lineNum">     168 </span>            : scs_pack_A(int mc, int kc, const double *A, int incRowA, int incColA,
+<span class="lineNum">     169 </span>            :         double *buffer) {
+<span class="lineNum">     170 </span>            :     int mp = mc / SCS_DGEMM_NN_MR;
+<span class="lineNum">     171 </span>            :     int _mr = mc % SCS_DGEMM_NN_MR;
+<span class="lineNum">     172 </span>            : 
+<span class="lineNum">     173 </span>            :     int i;
+<span class="lineNum">     174 </span>            : 
+<span class="lineNum">     175 </span>            :     for (i = 0; i &lt; mp; ++i) {
+<span class="lineNum">     176 </span>            :         scs_pack_MRxk(kc, A, incRowA, incColA, buffer);
+<span class="lineNum">     177 </span>            :         buffer += kc*SCS_DGEMM_NN_MR;
+<span class="lineNum">     178 </span>            :         A += SCS_DGEMM_NN_MR*incRowA;
+<span class="lineNum">     179 </span>            :     }
+<span class="lineNum">     180 </span>            :     if (_mr &gt; 0) {
+<span class="lineNum">     181 </span>            :         int j;
+<span class="lineNum">     182 </span>            :         for (j = 0; j &lt; kc; ++j) {
+<span class="lineNum">     183 </span>            :             for (i = 0; i &lt; _mr; ++i) {
+<span class="lineNum">     184 </span>            :                 buffer[i] = A[i * incRowA];
+<span class="lineNum">     185 </span>            :             }
+<span class="lineNum">     186 </span>            :             for (i = _mr; i &lt; SCS_DGEMM_NN_MR; ++i) {
+<span class="lineNum">     187 </span>            :                 buffer[i] = 0.0;
+<span class="lineNum">     188 </span>            :             }
+<span class="lineNum">     189 </span>            :             buffer += SCS_DGEMM_NN_MR;
+<span class="lineNum">     190 </span>            :             A += incColA;
+<span class="lineNum">     191 </span>            :         }
+<span class="lineNum">     192 </span>            :     }
+<span class="lineNum">     193 </span>            : }
+<span class="lineNum">     194 </span>            : 
+<span class="lineNum">     195 </span>            : /*
+<span class="lineNum">     196 </span>            :  *  Packing complete panels from B (i.e. without padding)
+<span class="lineNum">     197 </span>            :  */
+<span class="lineNum">     198 </span>            : static void
+<span class="lineNum">     199 </span>            : scs_pack_kxNR(int k, const double *B, int incRowB, int incColB,
+<span class="lineNum">     200 </span>            :         double *buffer) {
+<span class="lineNum">     201 </span>            :     int i, j;
+<span class="lineNum">     202 </span>            : 
+<span class="lineNum">     203 </span>            :     for (i = 0; i &lt; k; ++i) {
+<span class="lineNum">     204 </span>            :         for (j = 0; j &lt; SCS_DGEMM_NN_NR; ++j) {
+<span class="lineNum">     205 </span>            :             buffer[j] = B[j * incColB];
+<span class="lineNum">     206 </span>            :         }
+<span class="lineNum">     207 </span>            :         buffer += SCS_DGEMM_NN_NR;
+<span class="lineNum">     208 </span>            :         B += incRowB;
+<span class="lineNum">     209 </span>            :     }
+<span class="lineNum">     210 </span>            : }
+<span class="lineNum">     211 </span>            : 
+<span class="lineNum">     212 </span>            : /*
+<span class="lineNum">     213 </span>            :  *  Packing panels from B with padding if required
+<span class="lineNum">     214 </span>            :  */
+<span class="lineNum">     215 </span>            : static void
+<span class="lineNum">     216 </span>            : scs_pack_B(int kc, int nc, const double *B, int incRowB, int incColB,
+<span class="lineNum">     217 </span>            :         double *buffer) {
+<span class="lineNum">     218 </span>            :     int np = nc / SCS_DGEMM_NN_NR;
+<span class="lineNum">     219 </span>            :     int _nr = nc % SCS_DGEMM_NN_NR;
+<span class="lineNum">     220 </span>            : 
+<span class="lineNum">     221 </span>            :     int j;
+<span class="lineNum">     222 </span>            : 
+<span class="lineNum">     223 </span>            :     for (j = 0; j &lt; np; ++j) {
+<span class="lineNum">     224 </span>            :         scs_pack_kxNR(kc, B, incRowB, incColB, buffer);
+<span class="lineNum">     225 </span>            :         buffer += kc*SCS_DGEMM_NN_NR;
+<span class="lineNum">     226 </span>            :         B += SCS_DGEMM_NN_NR*incColB;
+<span class="lineNum">     227 </span>            :     }
+<span class="lineNum">     228 </span>            :     if (_nr &gt; 0) {
+<span class="lineNum">     229 </span>            :         int i;
+<span class="lineNum">     230 </span>            :         for (i = 0; i &lt; kc; ++i) {
+<span class="lineNum">     231 </span>            :             for (j = 0; j &lt; _nr; ++j) {
+<span class="lineNum">     232 </span>            :                 buffer[j] = B[j * incColB];
+<span class="lineNum">     233 </span>            :             }
+<span class="lineNum">     234 </span>            :             for (j = _nr; j &lt; SCS_DGEMM_NN_NR; ++j) {
+<span class="lineNum">     235 </span>            :                 buffer[j] = 0.0;
+<span class="lineNum">     236 </span>            :             }
+<span class="lineNum">     237 </span>            :             buffer += SCS_DGEMM_NN_NR;
+<span class="lineNum">     238 </span>            :             B += incRowB;
+<span class="lineNum">     239 </span>            :         }
+<span class="lineNum">     240 </span>            :     }
+<span class="lineNum">     241 </span>            : }
+<span class="lineNum">     242 </span>            : 
+<span class="lineNum">     243 </span>            : /*
+<span class="lineNum">     244 </span>            :  *  Micro kernel for multiplying panels from A and B.
+<span class="lineNum">     245 </span>            :  */
+<span class="lineNum">     246 </span>            : static void
+<span class="lineNum">     247 </span>            : scs_dgemm_micro_kernel(int kc,
+<span class="lineNum">     248 </span>            :         double alpha, const double *A, const double *B,
+<span class="lineNum">     249 </span>            :         double beta,
+<span class="lineNum">     250 </span>            :         double *C, int incRowC, int incColC) {
+<span class="lineNum">     251 </span>            :     double AB[SCS_DGEMM_NN_MR * SCS_DGEMM_NN_NR];
+<span class="lineNum">     252 </span>            : 
+<span class="lineNum">     253 </span>            :     int i, j, l;
+<span class="lineNum">     254 </span>            : 
+<span class="lineNum">     255 </span>            :     /*  Compute AB = A*B */
+<span class="lineNum">     256 </span>            :     for (l = 0; l &lt; SCS_DGEMM_NN_MR * SCS_DGEMM_NN_NR; ++l) {
+<span class="lineNum">     257 </span>            :         AB[l] = 0;
+<span class="lineNum">     258 </span>            :     }
+<span class="lineNum">     259 </span>            :     for (l = 0; l &lt; kc; ++l) {
+<span class="lineNum">     260 </span>            :         for (j = 0; j &lt; SCS_DGEMM_NN_NR; ++j) {
+<span class="lineNum">     261 </span>            :             for (i = 0; i &lt; SCS_DGEMM_NN_MR; ++i) {
+<span class="lineNum">     262 </span>            :                 AB[i + j * SCS_DGEMM_NN_MR] += A[i] * B[j];
+<span class="lineNum">     263 </span>            :             }
+<span class="lineNum">     264 </span>            :         }
+<span class="lineNum">     265 </span>            :         A += SCS_DGEMM_NN_MR;
+<span class="lineNum">     266 </span>            :         B += SCS_DGEMM_NN_NR;
+<span class="lineNum">     267 </span>            :     }
+<span class="lineNum">     268 </span>            : 
+<span class="lineNum">     269 </span>            :     /*
+<span class="lineNum">     270 </span>            :      *  Update C &lt;- beta*C
+<span class="lineNum">     271 </span>            :      */
+<span class="lineNum">     272 </span>            :     if (beta == 0.0) {
+<span class="lineNum">     273 </span>            :         for (j = 0; j &lt; SCS_DGEMM_NN_NR; ++j) {
+<span class="lineNum">     274 </span>            :             for (i = 0; i &lt; SCS_DGEMM_NN_MR; ++i) {
+<span class="lineNum">     275 </span>            :                 C[i * incRowC + j * incColC] = 0.0;
+<span class="lineNum">     276 </span>            :             }
+<span class="lineNum">     277 </span>            :         }
+<span class="lineNum">     278 </span>            :     } else if (beta != 1.0) {
+<span class="lineNum">     279 </span>            :         for (j = 0; j &lt; SCS_DGEMM_NN_NR; ++j) {
+<span class="lineNum">     280 </span>            :             for (i = 0; i &lt; SCS_DGEMM_NN_MR; ++i) {
+<span class="lineNum">     281 </span>            :                 C[i * incRowC + j * incColC] *= beta;
+<span class="lineNum">     282 </span>            :             }
+<span class="lineNum">     283 </span>            :         }
+<span class="lineNum">     284 </span>            :     }
+<span class="lineNum">     285 </span>            : 
+<span class="lineNum">     286 </span>            :     /*
+<span class="lineNum">     287 </span>            :      *  Update C &lt;- C + alpha*AB (note: the case alpha==0.0 was already treated in
+<span class="lineNum">     288 </span>            :      *                                  the above layer dgemm_nn)
+<span class="lineNum">     289 </span>            :      */
+<span class="lineNum">     290 </span>            :     if (alpha == 1.0) {
+<span class="lineNum">     291 </span>            :         for (j = 0; j &lt; SCS_DGEMM_NN_NR; ++j) {
+<span class="lineNum">     292 </span>            :             for (i = 0; i &lt; SCS_DGEMM_NN_MR; ++i) {
+<span class="lineNum">     293 </span>            :                 C[i * incRowC + j * incColC] += AB[i + j * SCS_DGEMM_NN_MR];
+<span class="lineNum">     294 </span>            :             }
+<span class="lineNum">     295 </span>            :         }
+<span class="lineNum">     296 </span>            :     } else {
+<span class="lineNum">     297 </span>            :         for (j = 0; j &lt; SCS_DGEMM_NN_NR; ++j) {
+<span class="lineNum">     298 </span>            :             for (i = 0; i &lt; SCS_DGEMM_NN_MR; ++i) {
+<span class="lineNum">     299 </span>            :                 C[i * incRowC + j * incColC] += alpha * AB[i + j * SCS_DGEMM_NN_MR];
+<span class="lineNum">     300 </span>            :             }
+<span class="lineNum">     301 </span>            :         }
+<span class="lineNum">     302 </span>            :     }
+<span class="lineNum">     303 </span>            : }
+<span class="lineNum">     304 </span>            : 
+<span class="lineNum">     305 </span>            : /*
+<span class="lineNum">     306 </span>            :  *  Compute Y += alpha*X
+<span class="lineNum">     307 </span>            :  */
+<span class="lineNum">     308 </span>            : static void
+<span class="lineNum">     309 </span>            : scs_dgeaxpy(int m,
+<span class="lineNum">     310 </span>            :         int n,
+<span class="lineNum">     311 </span>            :         double alpha,
+<span class="lineNum">     312 </span>            :         const double *X,
+<span class="lineNum">     313 </span>            :         int incRowX,
+<span class="lineNum">     314 </span>            :         int incColX,
+<span class="lineNum">     315 </span>            :         double *Y,
+<span class="lineNum">     316 </span>            :         int incRowY,
+<span class="lineNum">     317 </span>            :         int incColY) {
+<span class="lineNum">     318 </span>            :     int i, j;
+<span class="lineNum">     319 </span>            : 
+<span class="lineNum">     320 </span>            : 
+<span class="lineNum">     321 </span>            :     if (alpha != 1.0) {
+<span class="lineNum">     322 </span>            :         for (j = 0; j &lt; n; ++j) {
+<span class="lineNum">     323 </span>            :             for (i = 0; i &lt; m; ++i) {
+<span class="lineNum">     324 </span>            :                 Y[i * incRowY + j * incColY] += alpha * X[i * incRowX + j * incColX];
+<span class="lineNum">     325 </span>            :             }
+<span class="lineNum">     326 </span>            :         }
+<span class="lineNum">     327 </span>            :     } else {
+<span class="lineNum">     328 </span>            :         for (j = 0; j &lt; n; ++j) {
+<span class="lineNum">     329 </span>            :             for (i = 0; i &lt; m; ++i) {
+<span class="lineNum">     330 </span>            :                 Y[i * incRowY + j * incColY] += X[i * incRowX + j * incColX];
+<span class="lineNum">     331 </span>            :             }
+<span class="lineNum">     332 </span>            :         }
+<span class="lineNum">     333 </span>            :     }
+<span class="lineNum">     334 </span>            : }
+<span class="lineNum">     335 </span>            : 
+<span class="lineNum">     336 </span>            : /*
+<span class="lineNum">     337 </span>            :  *  Compute X *= alpha
+<span class="lineNum">     338 </span>            :  */
+<span class="lineNum">     339 </span>            : static void
+<span class="lineNum">     340 </span>            : scs_dgescal(int m,
+<span class="lineNum">     341 </span>            :         int n,
+<span class="lineNum">     342 </span>            :         double alpha,
+<span class="lineNum">     343 </span>            :         double *X,
+<span class="lineNum">     344 </span>            :         int incRowX,
+<span class="lineNum">     345 </span>            :         int incColX) {
+<span class="lineNum">     346 </span>            :     int i, j;
+<span class="lineNum">     347 </span>            : 
+<span class="lineNum">     348 </span>            :     if (alpha != 0.0) {
+<span class="lineNum">     349 </span>            :         for (j = 0; j &lt; n; ++j) {
+<span class="lineNum">     350 </span>            :             for (i = 0; i &lt; m; ++i) {
+<span class="lineNum">     351 </span>            :                 X[i * incRowX + j * incColX] *= alpha;
+<span class="lineNum">     352 </span>            :             }
+<span class="lineNum">     353 </span>            :         }
+<span class="lineNum">     354 </span>            :     } else {
+<span class="lineNum">     355 </span>            :         for (j = 0; j &lt; n; ++j) {
+<span class="lineNum">     356 </span>            :             for (i = 0; i &lt; m; ++i) {
+<span class="lineNum">     357 </span>            :                 X[i * incRowX + j * incColX] = 0.0;
+<span class="lineNum">     358 </span>            :             }
+<span class="lineNum">     359 </span>            :         }
+<span class="lineNum">     360 </span>            :     }
+<span class="lineNum">     361 </span>            : }
+<span class="lineNum">     362 </span>            : 
+<span class="lineNum">     363 </span>            : /*
+<span class="lineNum">     364 </span>            :  * Macro Kernel for the multiplication of blocks of A and B.  We assume that
+<span class="lineNum">     365 </span>            :  *  these blocks were previously packed to buffers _A and _B.
+<span class="lineNum">     366 </span>            :  */
+<span class="lineNum">     367 </span>            : static void
+<span class="lineNum">     368 </span>            : scs_dgemm_macro_kernel(int mc,
+<span class="lineNum">     369 </span>            :         int nc,
+<span class="lineNum">     370 </span>            :         int kc,
+<span class="lineNum">     371 </span>            :         double alpha,
+<span class="lineNum">     372 </span>            :         double beta,
+<span class="lineNum">     373 </span>            :         double *C,
+<span class="lineNum">     374 </span>            :         int incRowC,
+<span class="lineNum">     375 </span>            :         int incColC) {
+<span class="lineNum">     376 </span>            :     int mp = (mc + SCS_DGEMM_NN_MR - 1) / SCS_DGEMM_NN_MR;
+<span class="lineNum">     377 </span>            :     int np = (nc + SCS_DGEMM_NN_NR - 1) / SCS_DGEMM_NN_NR;
+<span class="lineNum">     378 </span>            : 
+<span class="lineNum">     379 </span>            :     int _mr = mc % SCS_DGEMM_NN_MR;
+<span class="lineNum">     380 </span>            :     int _nr = nc % SCS_DGEMM_NN_NR;
+<span class="lineNum">     381 </span>            : 
+<span class="lineNum">     382 </span>            :     int mr;
+<span class="lineNum">     383 </span>            :     int i, j;
+<span class="lineNum">     384 </span>            : 
+<span class="lineNum">     385 </span>            :     for (j = 0; j &lt; np; ++j) {
+<span class="lineNum">     386 </span>            :         int nr;
+<span class="lineNum">     387 </span>            :         nr = (j != np - 1 || _nr == 0) ? SCS_DGEMM_NN_NR : _nr;
+<span class="lineNum">     388 </span>            : 
+<span class="lineNum">     389 </span>            :         for (i = 0; i &lt; mp; ++i) {
+<span class="lineNum">     390 </span>            :             mr = (i != mp - 1 || _mr == 0) ? SCS_DGEMM_NN_MR : _mr;
+<span class="lineNum">     391 </span>            : 
+<span class="lineNum">     392 </span>            :             if (mr == SCS_DGEMM_NN_MR &amp;&amp; nr == SCS_DGEMM_NN_NR) {
+<span class="lineNum">     393 </span>            :                 scs_dgemm_micro_kernel(kc, alpha, &amp;SCS_DGEMM_NN__A[i * kc * SCS_DGEMM_NN_MR], &amp;SCS_DGEMM_NN__B[j * kc * SCS_DGEMM_NN_NR],
+<span class="lineNum">     394 </span>            :                         beta,
+<span class="lineNum">     395 </span>            :                         &amp;C[i * SCS_DGEMM_NN_MR * incRowC + j * SCS_DGEMM_NN_NR * incColC],
+<span class="lineNum">     396 </span>            :                         incRowC, incColC);
+<span class="lineNum">     397 </span>            :             } else {
+<span class="lineNum">     398 </span>            :                 scs_dgemm_micro_kernel(kc, alpha, &amp;SCS_DGEMM_NN__A[i * kc * SCS_DGEMM_NN_MR], &amp;SCS_DGEMM_NN__B[j * kc * SCS_DGEMM_NN_NR],
+<span class="lineNum">     399 </span>            :                         0.0,
+<span class="lineNum">     400 </span>            :                         SCS_DGEMM_NN__C, 1, SCS_DGEMM_NN_MR);
+<span class="lineNum">     401 </span>            :                 scs_dgescal(mr, nr, beta,
+<span class="lineNum">     402 </span>            :                         &amp;C[i * SCS_DGEMM_NN_MR * incRowC + j * SCS_DGEMM_NN_NR * incColC], incRowC, incColC);
+<span class="lineNum">     403 </span>            :                 scs_dgeaxpy(mr, nr, 1.0, SCS_DGEMM_NN__C, 1, SCS_DGEMM_NN_MR,
+<span class="lineNum">     404 </span>            :                         &amp;C[i * SCS_DGEMM_NN_MR * incRowC + j * SCS_DGEMM_NN_NR * incColC], incRowC, incColC);
+<span class="lineNum">     405 </span>            :             }
+<span class="lineNum">     406 </span>            :         }
+<span class="lineNum">     407 </span>            :     }
+<span class="lineNum">     408 </span>            : }
+<span class="lineNum">     409 </span>            : 
+<span class="lineNum">     410 </span>            : /*  Compute C &lt;- beta*C + alpha*A*B */
+<span class="lineNum">     411 </span>            : 
+<span class="lineNum">     412 </span>            : /**
+<span class="lineNum">     413 </span>            :  * Perofrms the operation
+<span class="lineNum">     414 </span>            :  * \f[
+<span class="lineNum">     415 </span>            :  *    C \leftarrow \beta C + \alpha A B
+<span class="lineNum">     416 </span>            :  * \f]
+<span class="lineNum">     417 </span>            :  * 
+<span class="lineNum">     418 </span>            :  * @param m number of rows of matrix \f$A\f$
+<span class="lineNum">     419 </span>            :  * @param n number of columns of matrix \f$B\f$
+<span class="lineNum">     420 </span>            :  * @param k number of rows of matrix \f$B\f$ (columns of \f$A\f$)
+<span class="lineNum">     421 </span>            :  * @param alpha coefficient \f$\alpha\f$
+<span class="lineNum">     422 </span>            :  * @param A pointer to matrix \f$A\f$
+<span class="lineNum">     423 </span>            :  * @param incRowA increment in traversing the rows of \f$A\f$
+<span class="lineNum">     424 </span>            :  * @param incColA increment in traversing the columns of \f$A\f$
+<span class="lineNum">     425 </span>            :  * @param B pointer to matrix \f$B\f$
+<span class="lineNum">     426 </span>            :  * @param incRowB increment in traversing the rows of \f$B\f$
+<span class="lineNum">     427 </span>            :  * @param incColB increment in traversing the columns of \f$B\f$
+<span class="lineNum">     428 </span>            :  * @param beta coefficient \f$\beta\f$
+<span class="lineNum">     429 </span>            :  * @param C pointer to matrix \f$C\f$
+<span class="lineNum">     430 </span>            :  * @param incRowC increment in traversing the rows of \f$C\f$
+<span class="lineNum">     431 </span>            :  * @param incColC increment in traversing the columns of \f$C\f$
+<span class="lineNum">     432 </span>            :  * 
+<span class="lineNum">     433 </span>            :  * @see ::scs_matrix_multiply
+<span class="lineNum">     434 </span>            :  * 
+<span class="lineNum">     435 </span>            :  * \note The implementation of this method is that of 
+<span class="lineNum">     436 </span>            :  * [ULMBLAS](http://apfel.mathematik.uni-ulm.de/~lehn/sghpc/gemm/page13/index.html).
+<span class="lineNum">     437 </span>            :  * 
+<span class="lineNum">     438 </span>            :  * \note The original source code is available at 
+<span class="lineNum">     439 </span>            :  * [this link](http://apfel.mathematik.uni-ulm.de/~lehn/sghpc/gemm/page13/index.html).
+<span class="lineNum">     440 </span>            :  * 
+<span class="lineNum">     441 </span>            :  * \note The [ULMBLAS project](https://github.com/michael-lehn/ulmBLAS) is available
+<span class="lineNum">     442 </span>            :  * on github and is licensed with the 
+<span class="lineNum">     443 </span>            :  * [new BSD licence](https://github.com/michael-lehn/ulmBLAS/blob/master/LICENSE).
+<span class="lineNum">     444 </span>            :  * 
+<span class="lineNum">     445 </span>            :  * \warning This function works only with \c double precision data.
+<span class="lineNum">     446 </span>            :  * 
+<span class="lineNum">     447 </span>            :  */
+<span class="lineNum">     448 </span>            : void
+<span class="lineNum">     449 </span>            : scs_dgemm_nn(int m,
+<span class="lineNum">     450 </span>            :         int n,
+<span class="lineNum">     451 </span>            :         int k,
+<span class="lineNum">     452 </span>            :         double alpha,
+<span class="lineNum">     453 </span>            :         const double *A,
+<span class="lineNum">     454 </span>            :         int incRowA,
+<span class="lineNum">     455 </span>            :         int incColA,
+<span class="lineNum">     456 </span>            :         const double *B,
+<span class="lineNum">     457 </span>            :         int incRowB,
+<span class="lineNum">     458 </span>            :         int incColB,
+<span class="lineNum">     459 </span>            :         double beta,
+<span class="lineNum">     460 </span>            :         double *C,
+<span class="lineNum">     461 </span>            :         int incRowC,
+<span class="lineNum">     462 </span>            :         int incColC) {
+<span class="lineNum">     463 </span>            :     int mb = (m + SCS_DGEMM_NN_MC - 1) / SCS_DGEMM_NN_MC;
+<span class="lineNum">     464 </span>            :     int nb = (n + SCS_DGEMM_NN_NC - 1) / SCS_DGEMM_NN_NC;
+<span class="lineNum">     465 </span>            :     int kb = (k + SCS_DGEMM_NN_KC - 1) / SCS_DGEMM_NN_KC;
+<span class="lineNum">     466 </span>            : 
+<span class="lineNum">     467 </span>            :     int _mc = m % SCS_DGEMM_NN_MC;
+<span class="lineNum">     468 </span>            :     int _nc = n % SCS_DGEMM_NN_NC;
+<span class="lineNum">     469 </span>            :     int _kc = k % SCS_DGEMM_NN_KC;
+<span class="lineNum">     470 </span>            : 
+<span class="lineNum">     471 </span>            :     int mc, kc;
+<span class="lineNum">     472 </span>            :     int i, j, l;
+<span class="lineNum">     473 </span>            : 
+<span class="lineNum">     474 </span>            :     double _beta;
+<span class="lineNum">     475 </span>            : 
+<span class="lineNum">     476 </span>            :     if (alpha == 0.0 || k == 0) {
+<span class="lineNum">     477 </span>            :         scs_dgescal(m, n, beta, C, incRowC, incColC);
+<span class="lineNum">     478 </span>            :         return;
+<span class="lineNum">     479 </span>            :     }
+<span class="lineNum">     480 </span>            : 
+<span class="lineNum">     481 </span>            :     for (j = 0; j &lt; nb; ++j) {
+<span class="lineNum">     482 </span>            :         int nc;
+<span class="lineNum">     483 </span>            :         nc = (j != nb - 1 || _nc == 0) ? SCS_DGEMM_NN_NC : _nc;
+<span class="lineNum">     484 </span>            : 
+<span class="lineNum">     485 </span>            :         for (l = 0; l &lt; kb; ++l) {
+<span class="lineNum">     486 </span>            :             kc = (l != kb - 1 || _kc == 0) ? SCS_DGEMM_NN_KC : _kc;
+<span class="lineNum">     487 </span>            :             _beta = (l == 0) ? beta : 1.0;
+<span class="lineNum">     488 </span>            : 
+<span class="lineNum">     489 </span>            :             scs_pack_B(kc, nc,
+<span class="lineNum">     490 </span>            :                     &amp;B[l * SCS_DGEMM_NN_KC * incRowB + j * SCS_DGEMM_NN_NC * incColB], incRowB, incColB,
+<span class="lineNum">     491 </span>            :                     SCS_DGEMM_NN__B);
+<span class="lineNum">     492 </span>            : 
+<span class="lineNum">     493 </span>            :             for (i = 0; i &lt; mb; ++i) {
+<span class="lineNum">     494 </span>            :                 mc = (i != mb - 1 || _mc == 0) ? SCS_DGEMM_NN_MC : _mc;
+<span class="lineNum">     495 </span>            : 
+<span class="lineNum">     496 </span>            :                 scs_pack_A(mc, kc,
+<span class="lineNum">     497 </span>            :                         &amp;A[i * SCS_DGEMM_NN_MC * incRowA + l * SCS_DGEMM_NN_KC * incColA], incRowA, incColA,
+<span class="lineNum">     498 </span>            :                         SCS_DGEMM_NN__A);
+<span class="lineNum">     499 </span>            : 
+<span class="lineNum">     500 </span>            :                 scs_dgemm_macro_kernel(mc, nc, kc, alpha, _beta,
+<span class="lineNum">     501 </span>            :                         &amp;C[i * SCS_DGEMM_NN_MC * incRowC + j * SCS_DGEMM_NN_NC * incColC],
+<span class="lineNum">     502 </span>            :                         incRowC, incColC);
+<span class="lineNum">     503 </span>            :             }
+<span class="lineNum">     504 </span>            :         }
+<span class="lineNum">     505 </span>            :     }
+<span class="lineNum">     506 </span>            : }
+<span class="lineNum">     507 </span>            : 
+<span class="lineNum">     508 </span>            : /* LCOV_EXCL_STOP */
+<span class="lineNum">     509 </span>            : 
+<a name="510"><span class="lineNum">     510 </span>            : </a>
+<span class="lineNum">     511 </span>            : 
+<span class="lineNum">     512 </span><span class="lineCov">         56 : void scs_matrix_multiply(</span>
+<span class="lineNum">     513 </span>            :         scs_int m,
+<span class="lineNum">     514 </span>            :         scs_int n,
+<span class="lineNum">     515 </span>            :         scs_int k,
+<span class="lineNum">     516 </span>            :         scs_float alpha,
+<span class="lineNum">     517 </span>            :         const scs_float * RESTRICT A,
+<span class="lineNum">     518 </span>            :         scs_float beta,
+<span class="lineNum">     519 </span>            :         const scs_float * RESTRICT B,
+<span class="lineNum">     520 </span>            :         scs_float *C) {
+<span class="lineNum">     521 </span>            : #ifdef LAPACK_LIB_FOUND
+<span class="lineNum">     522 </span>            :     /* Use BLAS to multiply the two matrices */
+<span class="lineNum">     523 </span><span class="lineCov">         56 :     const char no_transpose = 'N';</span>
+<span class="lineNum">     524 </span><span class="lineCov">         56 :     const blasint m_ = m;</span>
+<span class="lineNum">     525 </span><span class="lineCov">         56 :     const blasint n_ = n;</span>
+<span class="lineNum">     526 </span><span class="lineCov">         56 :     const blasint k_ = k;</span>
+<span class="lineNum">     527 </span><span class="lineCov">         56 :     scs_gemm_(&amp;no_transpose, &amp;no_transpose,</span>
+<span class="lineNum">     528 </span>            :             &amp;m_, &amp;n_, &amp;k_, &amp;alpha, A, &amp;m_, B, &amp;k_, &amp;beta, C, &amp;m_);
+<span class="lineNum">     529 </span>            : #else
+<span class="lineNum">     530 </span>            :     scs_dgemm_nn(m, n, k, alpha, A, 1, m, B, 1, k, beta, C, 1, m);
+<span class="lineNum">     531 </span>            : #endif
+<span class="lineNum">     532 </span>            : 
+<a name="533"><span class="lineNum">     533 </span><span class="lineCov">         56 : }</span></a>
+<span class="lineNum">     534 </span>            : 
+<span class="lineNum">     535 </span><span class="lineCov">         15 : void scs_matrix_transpose_multiply(</span>
+<span class="lineNum">     536 </span>            :         scs_int m,
+<span class="lineNum">     537 </span>            :         scs_int n,
+<span class="lineNum">     538 </span>            :         scs_int k,
+<span class="lineNum">     539 </span>            :         scs_float alpha,
+<span class="lineNum">     540 </span>            :         const scs_float *A,
+<span class="lineNum">     541 </span>            :         scs_float beta,
+<span class="lineNum">     542 </span>            :         const scs_float *B,
+<span class="lineNum">     543 </span>            :         scs_float *C) {
+<span class="lineNum">     544 </span>            : 
+<span class="lineNum">     545 </span>            : #ifdef LAPACK_LIB_FOUND
+<span class="lineNum">     546 </span><span class="lineCov">         15 :     const char no_transpose = 'N';</span>
+<span class="lineNum">     547 </span><span class="lineCov">         15 :     const char transpose = 'T';</span>
+<span class="lineNum">     548 </span><span class="lineCov">         15 :     const blasint m_ = m;</span>
+<span class="lineNum">     549 </span><span class="lineCov">         15 :     const blasint n_ = n;</span>
+<span class="lineNum">     550 </span><span class="lineCov">         15 :     const blasint k_ = k;</span>
+<span class="lineNum">     551 </span><span class="lineCov">         15 :     scs_gemm_(&amp;transpose, &amp;no_transpose,</span>
+<span class="lineNum">     552 </span>            :             &amp;m_, &amp;n_, &amp;k_, &amp;alpha, A, &amp;k_, B, &amp;k_, &amp;beta, C, &amp;m_);
+<span class="lineNum">     553 </span>            : #else
+<span class="lineNum">     554 </span>            :     scs_dgemm_nn(m, n, k, alpha, A, k, 1, B, 1, k, beta, C, 1, m);
+<span class="lineNum">     555 </span>            : #endif
+<span class="lineNum">     556 </span>            : 
+<span class="lineNum">     557 </span>            : 
+<span class="lineNum">     558 </span><span class="lineCov">         15 : }</span>
+<a name="559"><span class="lineNum">     559 </span>            : </a>
+<span class="lineNum">     560 </span>            : /* x = b*a */
+<span class="lineNum">     561 </span><span class="lineCov">     200159 : void scs_set_as_scaled_array(</span>
+<span class="lineNum">     562 </span>            :         scs_float * RESTRICT x,
+<span class="lineNum">     563 </span>            :         const scs_float * RESTRICT a,
+<span class="lineNum">     564 </span>            :         const scs_float b,
+<span class="lineNum">     565 </span>            :         scs_int len) {
+<span class="lineNum">     566 </span>            : #ifdef LAPACK_LIB_FOUND
+<span class="lineNum">     567 </span><span class="lineCov">     200159 :     memcpy(x, a, len * sizeof (*x));</span>
+<span class="lineNum">     568 </span><span class="lineCov">     200159 :     scs_scale_array(x, b, len);</span>
+<span class="lineNum">     569 </span>            : #else
+<span class="lineNum">     570 </span>            :     register scs_int j;
+<span class="lineNum">     571 </span>            :     const scs_int block_size = 4;
+<span class="lineNum">     572 </span>            :     const scs_int block_len = len &gt;&gt; 2;
+<span class="lineNum">     573 </span>            :     const scs_int remaining = len % block_size;
+<span class="lineNum">     574 </span>            :     j = 0;
+<span class="lineNum">     575 </span>            :     while (j &lt; block_len * block_size) {
+<span class="lineNum">     576 </span>            :         x[j] = b * a[j];
+<span class="lineNum">     577 </span>            :         ++j;
+<span class="lineNum">     578 </span>            :         x[j] = b * a[j];
+<span class="lineNum">     579 </span>            :         ++j;
+<span class="lineNum">     580 </span>            :         x[j] = b * a[j];
+<span class="lineNum">     581 </span>            :         ++j;
+<span class="lineNum">     582 </span>            :         x[j] = b * a[j];
+<span class="lineNum">     583 </span>            :         ++j;
+<span class="lineNum">     584 </span>            :     }
+<span class="lineNum">     585 </span>            :     j = block_size * block_len;
+<span class="lineNum">     586 </span>            :     switch (remaining) {
+<span class="lineNum">     587 </span>            :         case 3: x[j + 2] = b * a[j + 2];
+<span class="lineNum">     588 </span>            :         case 2: x[j + 1] = b * a[j + 1];
+<span class="lineNum">     589 </span>            :         case 1: x[j] = b * a[j];
+<span class="lineNum">     590 </span>            :         case 0:;
+<span class="lineNum">     591 </span>            :     }
+<span class="lineNum">     592 </span>            : #endif
+<span class="lineNum">     593 </span><span class="lineCov">     200159 : }</span>
+<a name="594"><span class="lineNum">     594 </span>            : </a>
+<span class="lineNum">     595 </span>            : /* a *= b */
+<span class="lineNum">     596 </span><span class="lineCov">     474909 : void scs_scale_array(scs_float * RESTRICT a, const scs_float b, scs_int len) {</span>
+<span class="lineNum">     597 </span>            : #ifdef LAPACK_LIB_FOUND
+<span class="lineNum">     598 </span><span class="lineCov">     474909 :     const blasint one = 1;</span>
+<span class="lineNum">     599 </span><span class="lineCov">     474909 :     const blasint len_ = len;</span>
+<span class="lineNum">     600 </span><span class="lineCov">     474909 :     scs_scal_(&amp;len_, &amp;b, a, &amp;one);</span>
+<span class="lineNum">     601 </span>            : #else
+<span class="lineNum">     602 </span>            :     register scs_int j;
+<span class="lineNum">     603 </span>            :     const scs_int block_size = 4;
+<span class="lineNum">     604 </span>            :     const scs_int block_len = len &gt;&gt; 2;
+<span class="lineNum">     605 </span>            :     const scs_int remaining = len % block_size;
+<span class="lineNum">     606 </span>            :     j = 0;
+<span class="lineNum">     607 </span>            :     while (j &lt; block_len * block_size) {
+<span class="lineNum">     608 </span>            :         a[j] *= b;
+<span class="lineNum">     609 </span>            :         ++j;
+<span class="lineNum">     610 </span>            :         a[j] *= b;
+<span class="lineNum">     611 </span>            :         ++j;
+<span class="lineNum">     612 </span>            :         a[j] *= b;
+<span class="lineNum">     613 </span>            :         ++j;
+<span class="lineNum">     614 </span>            :         a[j] *= b;
+<span class="lineNum">     615 </span>            :         ++j;
+<span class="lineNum">     616 </span>            :     }
+<span class="lineNum">     617 </span>            :     j = block_size * block_len;
+<span class="lineNum">     618 </span>            :     switch (remaining) {
+<span class="lineNum">     619 </span>            :         case 3: a[j + 2] *= b;
+<span class="lineNum">     620 </span>            :         case 2: a[j + 1] *= b;
+<span class="lineNum">     621 </span>            :         case 1: a[j] *= b;
+<span class="lineNum">     622 </span>            :         case 0:;
+<span class="lineNum">     623 </span>            :     }
+<span class="lineNum">     624 </span>            : #endif    
+<span class="lineNum">     625 </span><span class="lineCov">     474909 : }</span>
+<a name="626"><span class="lineNum">     626 </span>            : </a>
+<span class="lineNum">     627 </span>            : /* x'*y */
+<span class="lineNum">     628 </span><span class="lineCov">     778615 : scs_float scs_inner_product(</span>
+<span class="lineNum">     629 </span>            :         const scs_float * RESTRICT x,
+<span class="lineNum">     630 </span>            :         const scs_float * RESTRICT y,
+<span class="lineNum">     631 </span>            :         scs_int len) {
+<span class="lineNum">     632 </span>            : #ifdef LAPACK_LIB_FOUND
+<span class="lineNum">     633 </span><span class="lineCov">     778615 :     blasint one = 1;</span>
+<span class="lineNum">     634 </span><span class="lineCov">     778615 :     const blasint len_ = len;</span>
+<span class="lineNum">     635 </span><span class="lineCov">     778615 :     scs_float dot_product = scs_dot_(&amp;len_, x, &amp;one, y, &amp;one);</span>
+<span class="lineNum">     636 </span><span class="lineCov">     778615 :     return dot_product;</span>
+<span class="lineNum">     637 </span>            : #else
+<span class="lineNum">     638 </span>            :     register scs_int j;
+<span class="lineNum">     639 </span>            :     register scs_float ip = 0.;
+<span class="lineNum">     640 </span>            :     register scs_float s0 = 0.;
+<span class="lineNum">     641 </span>            :     register scs_float s1 = 0.;
+<span class="lineNum">     642 </span>            :     register scs_float s2 = 0.;
+<span class="lineNum">     643 </span>            :     register scs_float s3 = 0.;
+<span class="lineNum">     644 </span>            :     static const scs_int block_size = 4;
+<span class="lineNum">     645 </span>            :     const scs_int block_len = len &gt;&gt; 2;
+<span class="lineNum">     646 </span>            :     const scs_int remaining = len % block_size;
+<span class="lineNum">     647 </span>            : 
+<span class="lineNum">     648 </span>            :     j = 0;
+<span class="lineNum">     649 </span>            :     while (j &lt; block_len * block_size) {
+<span class="lineNum">     650 </span>            :         s0 += x[j] * y[j];
+<span class="lineNum">     651 </span>            :         ++j;
+<span class="lineNum">     652 </span>            :         s1 += x[j] * y[j];
+<span class="lineNum">     653 </span>            :         ++j;
+<span class="lineNum">     654 </span>            :         s2 += x[j] * y[j];
+<span class="lineNum">     655 </span>            :         ++j;
+<span class="lineNum">     656 </span>            :         s3 += x[j] * y[j];
+<span class="lineNum">     657 </span>            :         ++j;
+<span class="lineNum">     658 </span>            :     }
+<span class="lineNum">     659 </span>            :     ip = s0 + s1 + s2 + s3;
+<span class="lineNum">     660 </span>            :     j = block_size * block_len;
+<span class="lineNum">     661 </span>            :     switch (remaining) {
+<span class="lineNum">     662 </span>            :         case 3: ip += x[j + 2] * y[j + 2];
+<span class="lineNum">     663 </span>            :         case 2: ip += x[j + 1] * y[j + 1];
+<span class="lineNum">     664 </span>            :         case 1: ip += x[j] * y[j];
+<span class="lineNum">     665 </span>            :         case 0:;
+<span class="lineNum">     666 </span>            :     }
+<span class="lineNum">     667 </span>            :     return ip;
+<span class="lineNum">     668 </span>            : #endif
+<span class="lineNum">     669 </span>            : }
+<a name="670"><span class="lineNum">     670 </span>            : </a>
+<span class="lineNum">     671 </span>            : /* ||v||_2^2 */
+<span class="lineNum">     672 </span><span class="lineCov">     193729 : scs_float scs_norm_squared(const scs_float * RESTRICT v, scs_int len) {</span>
+<span class="lineNum">     673 </span><span class="lineCov">     193729 :     return scs_inner_product(v, v, len);</span>
+<span class="lineNum">     674 </span>            : }
+<a name="675"><span class="lineNum">     675 </span>            : </a>
+<span class="lineNum">     676 </span>            : /* ||v||_2 */
+<span class="lineNum">     677 </span><span class="lineCov">     123947 : scs_float scs_norm(const scs_float * RESTRICT v, scs_int len) {</span>
+<span class="lineNum">     678 </span>            : #ifdef LAPACK_LIB_FOUND
+<span class="lineNum">     679 </span><span class="lineCov">     123947 :     blasint one = 1;</span>
+<span class="lineNum">     680 </span><span class="lineCov">     123947 :     blasint len_ = len;</span>
+<span class="lineNum">     681 </span><span class="lineCov">     123947 :     return scs_nrm2_(&amp;len_, v, &amp;one);</span>
+<span class="lineNum">     682 </span>            : #else
+<span class="lineNum">     683 </span>            :     return SQRTF(scs_norm_squared(v, len));
+<span class="lineNum">     684 </span>            : #endif
+<a name="685"><span class="lineNum">     685 </span>            : }</a>
+<span class="lineNum">     686 </span>            : 
+<span class="lineNum">     687 </span><span class="lineCov">          2 : scs_float scs_norm_infinity(</span>
+<span class="lineNum">     688 </span>            :         const scs_float * RESTRICT a,
+<span class="lineNum">     689 </span>            :         scs_int l) {
+<span class="lineNum">     690 </span>            : #ifdef LAPACK_LIB_FOUND
+<span class="lineNum">     691 </span><span class="lineCov">          2 :     blasint one = 1;</span>
+<span class="lineNum">     692 </span><span class="lineCov">          2 :     blasint len_ = l;</span>
+<span class="lineNum">     693 </span><span class="lineCov">          2 :     blasint idx_max = scs_iamax_(&amp;len_, a, &amp;one);</span>
+<span class="lineNum">     694 </span><span class="lineCov">          2 :     return a[idx_max];</span>
+<span class="lineNum">     695 </span>            : #else
+<span class="lineNum">     696 </span>            :     scs_float tmp, max = 0.0;
+<span class="lineNum">     697 </span>            :     scs_int i;
+<span class="lineNum">     698 </span>            :     for (i = 0; i &lt; l; ++i) {
+<span class="lineNum">     699 </span>            :         tmp = ABS(a[i]);
+<span class="lineNum">     700 </span>            :         if (tmp &gt; max)
+<span class="lineNum">     701 </span>            :             max = tmp;
+<span class="lineNum">     702 </span>            :     }
+<span class="lineNum">     703 </span>            :     return max;
+<span class="lineNum">     704 </span>            : #endif
+<span class="lineNum">     705 </span>            : }
+<a name="706"><span class="lineNum">     706 </span>            : </a>
+<span class="lineNum">     707 </span>            : /* saxpy a += sc*b */
+<span class="lineNum">     708 </span><span class="lineCov">     997518 : void scs_add_scaled_array(</span>
+<span class="lineNum">     709 </span>            :         scs_float * RESTRICT a,
+<span class="lineNum">     710 </span>            :         const scs_float * RESTRICT b,
+<span class="lineNum">     711 </span>            :         scs_int len,
+<span class="lineNum">     712 </span>            :         const scs_float sc) {
+<span class="lineNum">     713 </span>            : #ifdef LAPACK_LIB_FOUND    
+<span class="lineNum">     714 </span><span class="lineCov">     997518 :     blasint one = 1;</span>
+<span class="lineNum">     715 </span><span class="lineCov">     997518 :     const blasint len_ = len;</span>
+<span class="lineNum">     716 </span><span class="lineCov">     997518 :     scs_axpy_(&amp;len_, &amp;sc, b, &amp;one, a, &amp;one);</span>
+<span class="lineNum">     717 </span>            : #else
+<span class="lineNum">     718 </span>            :     register scs_int j;
+<span class="lineNum">     719 </span>            :     const scs_int block_size = 4;
+<span class="lineNum">     720 </span>            :     const scs_int block_len = len &gt;&gt; 2; /* divide by 4*/
+<span class="lineNum">     721 </span>            :     const scs_int remaining = len % block_size;
+<span class="lineNum">     722 </span>            :     j = 0;
+<span class="lineNum">     723 </span>            :     while (j &lt; block_len * block_size) {
+<span class="lineNum">     724 </span>            :         a[j] += sc * b[j];
+<span class="lineNum">     725 </span>            :         ++j;
+<span class="lineNum">     726 </span>            :         a[j] += sc * b[j];
+<span class="lineNum">     727 </span>            :         ++j;
+<span class="lineNum">     728 </span>            :         a[j] += sc * b[j];
+<span class="lineNum">     729 </span>            :         ++j;
+<span class="lineNum">     730 </span>            :         a[j] += sc * b[j];
+<span class="lineNum">     731 </span>            :         ++j;
+<span class="lineNum">     732 </span>            :     }
+<span class="lineNum">     733 </span>            :     j = block_size * block_len;
+<span class="lineNum">     734 </span>            :     switch (remaining) {
+<span class="lineNum">     735 </span>            :         case 3: a[j + 2] += sc * b[j + 2];
+<span class="lineNum">     736 </span>            :         case 2: a[j + 1] += sc * b[j + 1];
+<span class="lineNum">     737 </span>            :         case 1: a[j] += sc * b[j];
+<span class="lineNum">     738 </span>            :         case 0:;
+<span class="lineNum">     739 </span>            :     }
+<span class="lineNum">     740 </span>            : #endif
+<a name="741"><span class="lineNum">     741 </span><span class="lineCov">     997518 : }</span></a>
+<span class="lineNum">     742 </span>            : 
+<span class="lineNum">     743 </span><span class="lineCov">     412485 : void scs_axpy(</span>
+<span class="lineNum">     744 </span>            :         scs_float * RESTRICT x,
+<span class="lineNum">     745 </span>            :         const scs_float * RESTRICT u,
+<span class="lineNum">     746 </span>            :         const scs_float * RESTRICT v,
+<span class="lineNum">     747 </span>            :         scs_float alpha,
+<span class="lineNum">     748 </span>            :         scs_float beta,
+<span class="lineNum">     749 </span>            :         scs_int n) {
+<span class="lineNum">     750 </span>            : #ifdef LAPACK_LIB_FOUND
+<span class="lineNum">     751 </span><span class="lineCov">     412485 :     scs_float tol = 1e-16;</span>
+<span class="lineNum">     752 </span><span class="lineCov">     412485 :     if (x != u) {</span>
+<span class="lineNum">     753 </span><span class="lineCov">     409342 :         if (ABS(alpha - 1) &gt; tol) {</span>
+<span class="lineNum">     754 </span>            :             /* x = a * u */
+<span class="lineNum">     755 </span><span class="lineCov">     116109 :             scs_set_as_scaled_array(x, u, alpha, n);</span>
+<span class="lineNum">     756 </span>            :         } else {
+<span class="lineNum">     757 </span><span class="lineCov">     293233 :             memcpy(x, u, n * sizeof (*x));</span>
+<span class="lineNum">     758 </span>            :         }
+<span class="lineNum">     759 </span>            :     } else {
+<span class="lineNum">     760 </span><span class="lineCov">       3143 :         scs_scale_array(x, alpha, n);</span>
+<span class="lineNum">     761 </span>            :     }
+<span class="lineNum">     762 </span>            :     /* x += b * v */
+<span class="lineNum">     763 </span><span class="lineCov">     412485 :     scs_add_scaled_array(x, v, n, beta);</span>
+<span class="lineNum">     764 </span>            : #else
+<span class="lineNum">     765 </span>            :     register scs_int j;
+<span class="lineNum">     766 </span>            :     const scs_int block_size = 4;
+<span class="lineNum">     767 </span>            :     const scs_int block_len = n &gt;&gt; 2; /* divide by 4*/
+<span class="lineNum">     768 </span>            :     const scs_int remaining = n % block_size;
+<span class="lineNum">     769 </span>            :     j = 0;
+<span class="lineNum">     770 </span>            :     while (j &lt; block_len * block_size) {
+<span class="lineNum">     771 </span>            :         x[j] = alpha * u[j] + beta * v[j];
+<span class="lineNum">     772 </span>            :         ++j;
+<span class="lineNum">     773 </span>            :         x[j] = alpha * u[j] + beta * v[j];
+<span class="lineNum">     774 </span>            :         ++j;
+<span class="lineNum">     775 </span>            :         x[j] = alpha * u[j] + beta * v[j];
+<span class="lineNum">     776 </span>            :         ++j;
+<span class="lineNum">     777 </span>            :         x[j] = alpha * u[j] + beta * v[j];
+<span class="lineNum">     778 </span>            :         ++j;
+<span class="lineNum">     779 </span>            :     }
+<span class="lineNum">     780 </span>            :     j = block_size * block_len;
+<span class="lineNum">     781 </span>            :     switch (remaining) {
+<span class="lineNum">     782 </span>            :         case 3: x[j + 2] = alpha * u[j + 2] + beta * v[j + 2];
+<span class="lineNum">     783 </span>            :         case 2: x[j + 1] = alpha * u[j + 1] + beta * v[j + 1];
+<span class="lineNum">     784 </span>            :         case 1: x[j] = alpha * u[j] + beta * v[j];
+<span class="lineNum">     785 </span>            :         case 0:;
+<span class="lineNum">     786 </span>            :     }
+<span class="lineNum">     787 </span>            : #endif
+<a name="788"><span class="lineNum">     788 </span><span class="lineCov">     412485 : }</span></a>
+<span class="lineNum">     789 </span>            : 
+<span class="lineNum">     790 </span><span class="lineCov">      35567 : void scs_add_array(</span>
+<span class="lineNum">     791 </span>            :         scs_float * RESTRICT a,
+<span class="lineNum">     792 </span>            :         const scs_float * RESTRICT b,
+<span class="lineNum">     793 </span>            :         scs_int len) {
+<span class="lineNum">     794 </span>            : #ifdef LAPACK_LIB_FOUND
+<span class="lineNum">     795 </span><span class="lineCov">      35567 :     scs_add_scaled_array(a, b, len, 1.0);</span>
+<span class="lineNum">     796 </span>            : #else
+<span class="lineNum">     797 </span>            :     register scs_int j = 0;
+<span class="lineNum">     798 </span>            :     const scs_int block_size = 4;
+<span class="lineNum">     799 </span>            :     const scs_int block_len = len &gt;&gt; 2;
+<span class="lineNum">     800 </span>            :     const scs_int remaining = len % block_size;
+<span class="lineNum">     801 </span>            :     while (j &lt; block_len * block_size) {
+<span class="lineNum">     802 </span>            :         a[j] += b[j];
+<span class="lineNum">     803 </span>            :         ++j;
+<span class="lineNum">     804 </span>            :         a[j] += b[j];
+<span class="lineNum">     805 </span>            :         ++j;
+<span class="lineNum">     806 </span>            :         a[j] += b[j];
+<span class="lineNum">     807 </span>            :         ++j;
+<span class="lineNum">     808 </span>            :         a[j] += b[j];
+<span class="lineNum">     809 </span>            :         ++j;
+<span class="lineNum">     810 </span>            :     }
+<span class="lineNum">     811 </span>            :     j = block_size * block_len;
+<span class="lineNum">     812 </span>            :     switch (remaining) {
+<span class="lineNum">     813 </span>            :         case 3: a[j + 2] += b[j + 2];
+<span class="lineNum">     814 </span>            :         case 2: a[j + 1] += b[j + 1];
+<span class="lineNum">     815 </span>            :         case 1: a[j] += b[j];
+<span class="lineNum">     816 </span>            :         case 0:;
+<span class="lineNum">     817 </span>            :     }
+<span class="lineNum">     818 </span>            : #endif
+<a name="819"><span class="lineNum">     819 </span><span class="lineCov">      35567 : }</span></a>
+<span class="lineNum">     820 </span>            : 
+<span class="lineNum">     821 </span><span class="lineCov">          9 : void scs_subtract_array(</span>
+<span class="lineNum">     822 </span>            :         scs_float * RESTRICT a,
+<span class="lineNum">     823 </span>            :         const scs_float * RESTRICT b,
+<span class="lineNum">     824 </span>            :         scs_int len) {
+<span class="lineNum">     825 </span>            : #ifdef LAPACK_LIB_FOUND
+<span class="lineNum">     826 </span><span class="lineCov">          9 :     scs_add_scaled_array(a, b, len, -1.0);</span>
+<span class="lineNum">     827 </span>            : #else
+<span class="lineNum">     828 </span>            :     register scs_int j = 0;
+<span class="lineNum">     829 </span>            :     const scs_int block_size = 4;
+<span class="lineNum">     830 </span>            :     const scs_int block_len = len &gt;&gt; 2;
+<span class="lineNum">     831 </span>            :     const scs_int remaining = len % block_size;
+<span class="lineNum">     832 </span>            : 
+<span class="lineNum">     833 </span>            :     j = 0;
+<span class="lineNum">     834 </span>            :     while (j &lt; block_len * block_size) {
+<span class="lineNum">     835 </span>            :         a[j] -= b[j];
+<span class="lineNum">     836 </span>            :         ++j;
+<span class="lineNum">     837 </span>            :         a[j] -= b[j];
+<span class="lineNum">     838 </span>            :         ++j;
+<span class="lineNum">     839 </span>            :         a[j] -= b[j];
+<span class="lineNum">     840 </span>            :         ++j;
+<span class="lineNum">     841 </span>            :         a[j] -= b[j];
+<span class="lineNum">     842 </span>            :         ++j;
+<span class="lineNum">     843 </span>            :     }
+<span class="lineNum">     844 </span>            :     j = block_size * block_len;
+<span class="lineNum">     845 </span>            :     switch (remaining) {
+<span class="lineNum">     846 </span>            :         case 3: a[j + 2] -= b[j + 2];
+<span class="lineNum">     847 </span>            :         case 2: a[j + 1] -= b[j + 1];
+<span class="lineNum">     848 </span>            :         case 1: a[j] -= b[j];
+<span class="lineNum">     849 </span>            :         case 0:;
+<span class="lineNum">     850 </span>            :     }
+<span class="lineNum">     851 </span>            : #endif
+<a name="852"><span class="lineNum">     852 </span><span class="lineCov">          9 : }</span></a>
+<span class="lineNum">     853 </span>            : 
+<span class="lineNum">     854 </span><span class="lineCov">          1 : scs_float scs_norm_difference(</span>
+<span class="lineNum">     855 </span>            :         const scs_float * RESTRICT a,
+<span class="lineNum">     856 </span>            :         const scs_float * RESTRICT b,
+<span class="lineNum">     857 </span>            :         scs_int l) {
+<span class="lineNum">     858 </span><span class="lineCov">          1 :     scs_float nmDiff = 0.0, tmp;</span>
+<span class="lineNum">     859 </span>            :     scs_int i;
+<span class="lineNum">     860 </span><span class="lineCov">         11 :     for (i = 0; i &lt; l; ++i) {</span>
+<span class="lineNum">     861 </span><span class="lineCov">         10 :         tmp = (a[i] - b[i]);</span>
+<span class="lineNum">     862 </span><span class="lineCov">         10 :         nmDiff += tmp * tmp;</span>
+<span class="lineNum">     863 </span>            :     }
+<span class="lineNum">     864 </span><span class="lineCov">          1 :     return SQRTF(nmDiff);</span>
+<a name="865"><span class="lineNum">     865 </span>            : }</a>
+<span class="lineNum">     866 </span>            : 
+<span class="lineNum">     867 </span><span class="lineCov">         66 : scs_float scs_norm_infinity_difference(</span>
+<span class="lineNum">     868 </span>            :         const scs_float * RESTRICT a,
+<span class="lineNum">     869 </span>            :         const scs_float * RESTRICT b,
+<span class="lineNum">     870 </span>            :         scs_int l) {
+<span class="lineNum">     871 </span><span class="lineCov">         66 :     scs_float tmp, max = 0.0;</span>
+<span class="lineNum">     872 </span>            :     scs_int i;
+<span class="lineNum">     873 </span><span class="lineCov">      11435 :     for (i = 0; i &lt; l; ++i) {</span>
+<span class="lineNum">     874 </span><span class="lineCov">      11369 :         tmp = ABS(a[i] - b[i]);</span>
+<span class="lineNum">     875 </span><span class="lineCov">      11369 :         if (tmp &gt; max)</span>
+<span class="lineNum">     876 </span><span class="lineCov">         58 :             max = tmp;</span>
+<span class="lineNum">     877 </span>            :     }
+<span class="lineNum">     878 </span><span class="lineCov">         66 :     return max;</span>
+<a name="879"><span class="lineNum">     879 </span>            : }</a>
+<span class="lineNum">     880 </span>            : 
+<span class="lineNum">     881 </span><span class="lineCov">          3 : scs_float * scs_cgls_malloc_workspace(scs_int m, scs_int n) {</span>
+<span class="lineNum">     882 </span><span class="lineCov">          3 :     const scs_int maxmn = m &gt; n ? m : n;</span>
+<span class="lineNum">     883 </span><span class="lineCov">          3 :     if (m &lt;= 0 || n &lt;= 0) {</span>
+<span class="lineNum">     884 </span>            :         return SCS_NULL;
+<span class="lineNum">     885 </span>            :     }
+<span class="lineNum">     886 </span><span class="lineCov">          3 :     return malloc((maxmn + m + 2 * n) * sizeof (scs_float));</span>
+<a name="887"><span class="lineNum">     887 </span>            : }</a>
+<span class="lineNum">     888 </span>            : 
+<span class="lineNum">     889 </span><span class="lineCov">          3 : scs_int scs_cgls(</span>
+<span class="lineNum">     890 </span>            :         scs_int m,
+<span class="lineNum">     891 </span>            :         scs_int n,
+<span class="lineNum">     892 </span>            :         const scs_float * RESTRICT A,
+<span class="lineNum">     893 </span>            :         const scs_float * RESTRICT b,
+<span class="lineNum">     894 </span>            :         scs_float * RESTRICT x,
+<span class="lineNum">     895 </span>            :         scs_float tol,
+<span class="lineNum">     896 </span>            :         scs_int * RESTRICT maxiter,
+<span class="lineNum">     897 </span>            :         scs_float * RESTRICT workspace
+<span class="lineNum">     898 </span>            :         ) {
+<span class="lineNum">     899 </span><span class="lineCov">          3 :     const scs_int maxmn = m &gt; n ? m : n;</span>
+<span class="lineNum">     900 </span><span class="lineCov">          3 :     scs_float * r = workspace;</span>
+<span class="lineNum">     901 </span><span class="lineCov">          3 :     scs_float * p = r + n;</span>
+<span class="lineNum">     902 </span><span class="lineCov">          3 :     scs_float * t = p;</span>
+<span class="lineNum">     903 </span><span class="lineCov">          3 :     scs_float * xi = p + maxmn;</span>
+<span class="lineNum">     904 </span><span class="lineCov">          3 :     scs_float * phi = xi + n;</span>
+<span class="lineNum">     905 </span>            :     scs_float r_norm_old;
+<span class="lineNum">     906 </span>            :     scs_float r_norm_new;
+<span class="lineNum">     907 </span>            :     scs_int k;
+<span class="lineNum">     908 </span>            : 
+<span class="lineNum">     909 </span>            : 
+<span class="lineNum">     910 </span>            :     /* t = b */
+<span class="lineNum">     911 </span><span class="lineCov">          3 :     memcpy(t, b, m * sizeof (*t));</span>
+<span class="lineNum">     912 </span>            :     /* t = t - Ax */
+<span class="lineNum">     913 </span><span class="lineCov">          3 :     scs_matrix_multiply(m, 1, n, -1.0, A, 1.0, x, t);</span>
+<span class="lineNum">     914 </span>            :     /* r = A' * t */
+<span class="lineNum">     915 </span><span class="lineCov">          3 :     scs_matrix_transpose_multiply(n, 1, m, 1.0, A, 0.0, t, r);</span>
+<span class="lineNum">     916 </span>            :     /* p = r */
+<span class="lineNum">     917 </span><span class="lineCov">          3 :     memcpy(p, r, n * sizeof (*p));</span>
+<span class="lineNum">     918 </span>            :     /* r_norm_old = norm(r)^2 */
+<span class="lineNum">     919 </span><span class="lineCov">          3 :     r_norm_old = scs_norm_squared(r, n);</span>
+<span class="lineNum">     920 </span>            : 
+<span class="lineNum">     921 </span><span class="lineCov">         11 :     for (k = 0; k &lt; *maxiter; ++k) {</span>
+<span class="lineNum">     922 </span>            :         double alpha;
+<span class="lineNum">     923 </span>            :         /* phi = A * p */
+<span class="lineNum">     924 </span><span class="lineCov">         11 :         scs_matrix_multiply(m, 1, n, 1.0, A, 0.0, p, phi);</span>
+<span class="lineNum">     925 </span>            :         /* xi = A' * phi */
+<span class="lineNum">     926 </span><span class="lineCov">         11 :         scs_matrix_transpose_multiply(n, 1, m, 1.0, A, 0.0, phi, xi);</span>
+<span class="lineNum">     927 </span>            :         /* alpha = r_norm_old / (p'*xi) */
+<span class="lineNum">     928 </span><span class="lineCov">         11 :         alpha = r_norm_old / scs_inner_product(p, xi, n);</span>
+<span class="lineNum">     929 </span>            :         /*  x = x + alpha * p */
+<span class="lineNum">     930 </span><span class="lineCov">         11 :         scs_axpy(x, x, p, 1.0, alpha, n);</span>
+<span class="lineNum">     931 </span>            :         /* r = r - alpha * xi */
+<span class="lineNum">     932 </span><span class="lineCov">         11 :         scs_axpy(r, r, xi, 1.0, -alpha, n);</span>
+<span class="lineNum">     933 </span>            :         /* r_norm_new = norm(r)^2 */
+<span class="lineNum">     934 </span><span class="lineCov">         11 :         r_norm_new = scs_norm_squared(r, n);</span>
+<span class="lineNum">     935 </span><span class="lineCov">         11 :         if (sqrt(r_norm_new) &lt; tol) {</span>
+<span class="lineNum">     936 </span>            :             break;
+<span class="lineNum">     937 </span>            :         }
+<span class="lineNum">     938 </span>            :         /* p = beta * p + r*/
+<span class="lineNum">     939 </span><span class="lineCov">          8 :         scs_axpy(p, p, r, r_norm_new / r_norm_old, 1.0, n);</span>
+<span class="lineNum">     940 </span><span class="lineCov">          8 :         r_norm_old = r_norm_new;</span>
+<span class="lineNum">     941 </span>            :     }
+<span class="lineNum">     942 </span>            : 
+<span class="lineNum">     943 </span><span class="lineCov">          3 :     if (k == *maxiter) {</span>
+<span class="lineNum">     944 </span>            :         return 1;
+<span class="lineNum">     945 </span>            :     }
+<span class="lineNum">     946 </span>            : 
+<span class="lineNum">     947 </span><span class="lineCov">          3 :     *maxiter = k + 1;</span>
+<span class="lineNum">     948 </span>            : 
+<span class="lineNum">     949 </span><span class="lineCov">          3 :     return 0;</span>
+<span class="lineNum">     950 </span>            : }
+<span class="lineNum">     951 </span>            : 
+<a name="952"><span class="lineNum">     952 </span>            : #ifdef LAPACK_LIB_FOUND</a>
+<span class="lineNum">     953 </span>            : 
+<span class="lineNum">     954 </span><span class="lineCov">          1 : scs_int scs_qr_workspace_size(</span>
+<span class="lineNum">     955 </span>            :         scs_int m,
+<span class="lineNum">     956 </span>            :         scs_int n
+<span class="lineNum">     957 </span>            :         ) {
+<span class="lineNum">     958 </span><span class="lineCov">          1 :     blasint lwork = -1;</span>
+<span class="lineNum">     959 </span>            :     blasint status;
+<span class="lineNum">     960 </span><span class="lineCov">          1 :     blasint nrhs = 1;</span>
+<span class="lineNum">     961 </span><span class="lineCov">          1 :     blasint lda = m;</span>
+<span class="lineNum">     962 </span><span class="lineCov">          1 :     blasint ldb = m;</span>
+<span class="lineNum">     963 </span>            :     scs_float wkopt;
+<span class="lineNum">     964 </span><span class="lineCov">          1 :     blasint m_ = m;</span>
+<span class="lineNum">     965 </span><span class="lineCov">          1 :     blasint n_ = n;</span>
+<span class="lineNum">     966 </span><span class="lineCov">          1 :     if (m &lt;= 0 || n &lt;= 0) {</span>
+<span class="lineNum">     967 </span>            :         return 0;
+<span class="lineNum">     968 </span>            :     }
+<span class="lineNum">     969 </span><span class="lineCov">          1 :     scs_gels_((char *) &quot;No transpose&quot;, &amp;m_, &amp;n_, &amp;nrhs, 0, &amp;lda, 0, &amp;ldb, &amp;wkopt, &amp;lwork,</span>
+<span class="lineNum">     970 </span>            :             &amp;status);
+<span class="lineNum">     971 </span><span class="lineCov">          1 :     return (scs_int) wkopt;</span>
+<a name="972"><span class="lineNum">     972 </span>            : }</a>
+<span class="lineNum">     973 </span>            : 
+<span class="lineNum">     974 </span><span class="lineCov">          1 : scs_int scs_qrls(</span>
+<span class="lineNum">     975 </span>            :         scs_int m,
+<span class="lineNum">     976 </span>            :         scs_int n,
+<span class="lineNum">     977 </span>            :         scs_float * RESTRICT A,
+<span class="lineNum">     978 </span>            :         scs_float * RESTRICT b,
+<span class="lineNum">     979 </span>            :         scs_float * RESTRICT wspace,
+<span class="lineNum">     980 </span>            :         scs_int wsize
+<span class="lineNum">     981 </span>            :         ) {
+<span class="lineNum">     982 </span>            :     blasint status;
+<span class="lineNum">     983 </span><span class="lineCov">          1 :     blasint nrhs = 1;</span>
+<span class="lineNum">     984 </span><span class="lineCov">          1 :     blasint lda = m;</span>
+<span class="lineNum">     985 </span><span class="lineCov">          1 :     blasint ldb = m;</span>
+<span class="lineNum">     986 </span><span class="lineCov">          1 :     blasint m_ = m;</span>
+<span class="lineNum">     987 </span><span class="lineCov">          1 :     blasint n_ = n;</span>
+<span class="lineNum">     988 </span><span class="lineCov">          1 :     blasint wsize_ = wsize;</span>
+<span class="lineNum">     989 </span><span class="lineCov">          1 :     scs_gels_(&quot;No transpose&quot;, &amp;m_, &amp;n_, &amp;nrhs, A, &amp;lda, b, &amp;ldb, wspace, &amp;wsize_, &amp;status);</span>
+<span class="lineNum">     990 </span><span class="lineCov">          1 :     return status;</span>
+<a name="991"><span class="lineNum">     991 </span>            : }</a>
+<span class="lineNum">     992 </span>            : 
+<span class="lineNum">     993 </span><span class="lineCov">          5 : scs_int scs_svd_workspace_size(</span>
+<span class="lineNum">     994 </span>            :         scs_int m,
+<span class="lineNum">     995 </span>            :         scs_int n
+<span class="lineNum">     996 </span>            :         ) {
+<span class="lineNum">     997 </span>            :     blasint status;
+<span class="lineNum">     998 </span><span class="lineCov">          5 :     blasint nrhs = 1;</span>
+<span class="lineNum">     999 </span><span class="lineCov">          5 :     scs_float rcond = 1.;</span>
+<span class="lineNum">    1000 </span>            :     scs_float wkopt;
+<span class="lineNum">    1001 </span>            :     scs_float singular_values;
+<span class="lineNum">    1002 </span>            :     blasint rank;
+<span class="lineNum">    1003 </span><span class="lineCov">          5 :     blasint lwork = -1;</span>
+<span class="lineNum">    1004 </span><span class="lineCov">          5 :     blasint m_ = m;</span>
+<span class="lineNum">    1005 </span><span class="lineCov">          5 :     blasint n_ = n;</span>
+<span class="lineNum">    1006 </span>            : 
+<span class="lineNum">    1007 </span><span class="lineCov">          5 :     if (m &lt;= 0 || n &lt;= 0) {</span>
+<span class="lineNum">    1008 </span>            :         return 0;
+<span class="lineNum">    1009 </span>            :     }
+<span class="lineNum">    1010 </span>            : 
+<span class="lineNum">    1011 </span><span class="lineCov">          5 :     scs_dgelss_(&amp;m_, &amp;n_, &amp;nrhs, 0, &amp;m_, 0, &amp;m_,</span>
+<span class="lineNum">    1012 </span>            :             &amp;singular_values, &amp;rcond, &amp;rank,
+<span class="lineNum">    1013 </span>            :             &amp;wkopt, &amp;lwork, &amp;status);
+<span class="lineNum">    1014 </span>            : 
+<span class="lineNum">    1015 </span><span class="lineCov">          5 :     return (scs_int) wkopt;</span>
+<a name="1016"><span class="lineNum">    1016 </span>            : }</a>
+<span class="lineNum">    1017 </span>            : 
+<span class="lineNum">    1018 </span><span class="lineCov">         43 : scs_int scs_svdls(</span>
+<span class="lineNum">    1019 </span>            :         scs_int m,
+<span class="lineNum">    1020 </span>            :         scs_int n,
+<span class="lineNum">    1021 </span>            :         scs_float * RESTRICT A,
+<span class="lineNum">    1022 </span>            :         scs_float * RESTRICT b,
+<span class="lineNum">    1023 </span>            :         scs_float * RESTRICT wspace,
+<span class="lineNum">    1024 </span>            :         scs_int wsize,
+<span class="lineNum">    1025 </span>            :         scs_float rcond,
+<span class="lineNum">    1026 </span>            :         scs_float * RESTRICT singular_values,
+<span class="lineNum">    1027 </span>            :         scs_int * RESTRICT rank
+<span class="lineNum">    1028 </span>            :         ) {
+<span class="lineNum">    1029 </span>            : 
+<span class="lineNum">    1030 </span>            :     blasint status;
+<span class="lineNum">    1031 </span><span class="lineCov">         43 :     blasint nrhs = 1;</span>
+<span class="lineNum">    1032 </span><span class="lineCov">         43 :     blasint m_ = m;</span>
+<span class="lineNum">    1033 </span><span class="lineCov">         43 :     blasint n_ = n;</span>
+<span class="lineNum">    1034 </span><span class="lineCov">         43 :     blasint wsize_ = wsize;</span>
+<span class="lineNum">    1035 </span><span class="lineCov">         43 :     blasint rank_ = *rank;</span>
+<span class="lineNum">    1036 </span><span class="lineCov">         43 :     scs_dgelss_(&amp;m_, &amp;n_, &amp;nrhs, A, &amp;m_, b, &amp;m_,</span>
+<span class="lineNum">    1037 </span>            :             singular_values, &amp;rcond, &amp;rank_,
+<span class="lineNum">    1038 </span>            :             wspace, &amp;wsize_, &amp;status);
+<span class="lineNum">    1039 </span><span class="lineCov">         43 :     *rank = rank_;</span>
+<span class="lineNum">    1040 </span><span class="lineCov">         43 :     return (scs_int) status;</span>
+<span class="lineNum">    1041 </span>            : }
+<span class="lineNum">    1042 </span>            : #endif /* #ifdef LAPACK_LIB_FOUND */
+</pre>
+      </td>
+    </tr>
+  </table>
+  <br>
+
+  <table width="100%" border=0 cellspacing=0 cellpadding=0>
+    <tr><td class="ruler"><img src="../glass.png" width=3 height=3 alt=""></td></tr>
+    <tr><td class="versionInfo">Generated by: <a href="http://ltp.sourceforge.net/coverage/lcov.php" target="_parent">LCOV version 1.10</a></td></tr>
+  </table>
+  <br>
+
+</body>
+</html>
